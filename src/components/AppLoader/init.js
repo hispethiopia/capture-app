@@ -131,7 +131,7 @@ async function initializeMetaDataAsync(dbLocale: string, onQueryApi: Function) {
 
 async function initializeSystemSettingsAsync(
     uiLocale: string,
-    systemSettings: { dateFormat: string, serverTimeZoneId: string },
+    systemSettings: { dateFormat: string, serverTimeZoneId: string, calendar: string, },
 ) {
     const systemSettingsCacheData = await cacheSystemSettings(uiLocale, systemSettings);
     await buildSystemSettingsAsync(systemSettingsCacheData);
@@ -157,7 +157,7 @@ export async function initializeAsync(
     const systemSettings = await onQueryApi({
         resource: 'system/info',
         params: {
-            fields: 'dateFormat,serverTimeZoneId',
+            fields: 'dateFormat,serverTimeZoneId,calendar',
         },
     });
 

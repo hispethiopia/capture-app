@@ -1,9 +1,8 @@
 // @flow
 import React, { createRef } from 'react';
-import { DatePopup } from './DatePopup.component';
-import { DateCalendar } from './DateCalendar.component';
+import { CalendarInput } from '@dhis2/ui';
 import { lowerCaseFirstLetter } from '../../internal/utils/string/lowerCaseFirstLetter';
-import { DateInput } from '../../internal/DateInput/DateInput.component';
+import { systemSettingsStore } from '../../../capture-core/metaDataMemoryStores';
 
 type Props = {
     value: ?string,
@@ -21,6 +20,10 @@ type Props = {
 type State = {
     popoverOpen: boolean,
 };
+
+type CalendarEvent = {
+    calendarDateString: string,
+}
 
 export class DateField extends React.Component<Props, State> {
     static splitPassOnProps(passOnProps: ?Object) {
@@ -54,7 +57,7 @@ export class DateField extends React.Component<Props, State> {
 
     containerInstance: ?HTMLElement;
     handleTextFieldFocus: () => void;
-    handleDateSelected: (value: string) => void;
+    handleDateSelected: (event: CalendarEvent) => void;
     handleTextFieldBlur: (event: SyntheticEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     hidePopover: () => void;
     handleDocumentClick: (event: MouseEvent) => void;
@@ -96,7 +99,7 @@ export class DateField extends React.Component<Props, State> {
         this.props.onFocus && this.props.onFocus();
     }
 
-    handleDateSelected(value: string) {
+    handleDateSelected({ calendarDateString: value }: CalendarEvent) {
         this.props.onBlur(value);
         this.hidePopover();
         this.props.onDateSelectedFromCalendar && this.props.onDateSelectedFromCalendar();
@@ -153,11 +156,7 @@ export class DateField extends React.Component<Props, State> {
             onDateSelectedFromCalendar,
             ...passOnProps
         } = this.props;
-        const { popoverOpen } = this.state;
-        const calculatedInputWidth = inputWidth || width;
-        const calculatedCalendarWidth = calendarWidth || width;
         const splittedPassOnProps = DateField.splitPassOnProps(passOnProps);
-        const calculatedCalendarHeight = calendarHeight || 350;
 
         return (
             <div
@@ -167,40 +166,13 @@ export class DateField extends React.Component<Props, State> {
                     maxWidth,
                 }}
             >
-                { /* // $FlowFixMe */}
-                {/* $FlowFixMe[prop-missing] automated comment */}
-                <DateInput
-                    onFocus={this.handleTextFieldFocus}
-                    onBlur={this.handleTextFieldBlur}
-                    width={calculatedInputWidth}
+                <CalendarInput
+                    onDateSelect={this.handleDateSelected}
+                    calendar={systemSettingsStore.get().calendar}
+                    date={splittedPassOnProps && splittedPassOnProps.input && splittedPassOnProps.input.value ? splittedPassOnProps.input.value : ''}
                     {...splittedPassOnProps.input}
                 />
-                <div
-                    data-test="date-calendar-wrapper"
-                    ref={this.calendarWrapperDOMElementRef}
-                >
-                    { /* // $FlowFixMe */}
-                    {/* $FlowFixMe[prop-missing] automated comment */}
-                    <DatePopup
-                        open={popoverOpen}
-                        onClose={this.hidePopover}
-                        width={calculatedCalendarWidth}
-                        height={calculatedCalendarHeight}
-                        inputWidth={calculatedInputWidth}
-                        inputUsesFloatingLabel={!!splittedPassOnProps.input.label}
-                        {...splittedPassOnProps.popup}
-                    >
-                        { /* // $FlowFixMe */}
-                        {/* $FlowFixMe[prop-missing] automated comment */}
-                        <DateCalendar
-                            onDateSelected={this.handleDateSelected}
-                            value={this.props.value}
-                            currentWidth={calculatedCalendarWidth}
-                            height={calculatedCalendarHeight}
-                            {...splittedPassOnProps.calendar}
-                        />
-                    </DatePopup>
-                </div>
+
             </div>
         );
     }
